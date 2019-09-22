@@ -40,7 +40,8 @@
     "gulp-sass": "^4.0.2",
     "gulp-sourcemaps": "^2.6.5",
     "gulp-uglify-es": "^1.0.4",
-    "gulp-uglifycss": "^1.1.0"
+    "gulp-uglifycss": "^1.1.0",
+    "lodash.template": ">=4.5.0"
   },
   "devDependencies": {
     "@babel/core": "^7.6.0",
