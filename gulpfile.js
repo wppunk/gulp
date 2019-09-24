@@ -64,10 +64,10 @@ const reload = done => {
 /**
  * Custom Error Handler.
  *
- * @param Mixed err
+ * @param err
  */
-const errorHandler = r => {
-    notify.onError('\n\n❌  ===> ERROR: <%= error.message %>\n')(r);
+const errorHandler = err => {
+    notify.onError('\n\n❌  ===> ERROR: <%= error.message %>\n')(err);
     beep();
 };
 
@@ -85,36 +85,35 @@ const errorHandler = r => {
  *    6. Minifies the CSS file and generates style.min.css
  *    7. Injects CSS or reloads the browser via browserSync
  */
-gulp.task('styles', () => {
-    return gulp
-        .src(config.styleSRC, {allowEmpty: true})
-        .pipe(plumber(errorHandler))
-        .pipe(gulpif(config.isDev, sourcemaps.init()))
-        .pipe(
-            sass({
-                errLogToConsole: config.errLogToConsole,
-                outputStyle: config.outputStyle,
-                precision: config.precision
-            })
-        )
-        .on('error', sass.logError)
-        .pipe(gulpif(config.isDev, sourcemaps.write({includeContent: false})))
-        .pipe(gulpif(config.isDev, sourcemaps.init({loadMaps: true})))
-        .pipe(autoprefixer(config.browserList))
-        .pipe(gulpif(config.isDev, sourcemaps.write('./')))
-        .pipe(lineec()) // Consistent Line Endings for non UNIX systems.
-        .pipe(gulp.dest(config.styleDestination))
-        .pipe(filter('**/*.css')) // Filtering stream to only css files.
-        .pipe(mmq({log: true})) // Merge Media Queries only for .min.css version.
-        .pipe(browserSync.stream()) // Reloads style.css if that is enqueued.
-        .pipe(rename({suffix: '.min'}))
-        .pipe(minifycss())
-        .pipe(lineec()) // Consistent Line Endings for non UNIX systems.
-        .pipe(gulp.dest(config.styleDestination))
-        .pipe(filter('**/*.css')) // Filtering stream to only css files.
-        .pipe(browserSync.stream()) // Reloads style.min.css if that is enqueued.
-        .pipe(notify({message: '\n\n✅  ===> STYLES — completed!\n', onLast: true}));
-});
+gulp.task('styles', () => gulp
+    .src(config.styleSRC, {allowEmpty: true})
+    .pipe(plumber(errorHandler))
+    .pipe(gulpif(config.isDev, sourcemaps.init()))
+    .pipe(
+        sass({
+            errLogToConsole: config.errLogToConsole,
+            outputStyle: config.outputStyle,
+            precision: config.precision
+        })
+    )
+    .on('error', sass.logError)
+    .pipe(gulpif(config.isDev, sourcemaps.write({includeContent: false})))
+    .pipe(gulpif(config.isDev, sourcemaps.init({loadMaps: true})))
+    .pipe(autoprefixer(config.browserList))
+    .pipe(gulpif(config.isDev, sourcemaps.write('./')))
+    .pipe(lineec()) // Consistent Line Endings for non UNIX systems.
+    .pipe(gulp.dest(config.styleDestination))
+    .pipe(filter('**/*.css')) // Filtering stream to only css files.
+    .pipe(mmq({log: true})) // Merge Media Queries only for .min.css version.
+    .pipe(browserSync.stream()) // Reloads style.css if that is enqueued.
+    .pipe(rename({suffix: '.min'}))
+    .pipe(minifycss())
+    .pipe(lineec()) // Consistent Line Endings for non UNIX systems.
+    .pipe(gulp.dest(config.styleDestination))
+    .pipe(filter('**/*.css')) // Filtering stream to only css files.
+    .pipe(browserSync.stream()) // Reloads style.min.css if that is enqueued.
+    .pipe(notify({message: '\n\n✅  ===> STYLES — completed!\n', onLast: true}))
+);
 
 
 /**
@@ -128,36 +127,35 @@ gulp.task('styles', () => {
  *     3. Renames the JS file with suffix .min.js
  *     4. Uglifes/Minifies the JS file and generates custom.min.js
  */
-gulp.task('vendor-js', () => {
-    return gulp
-        .src(config.jsVendorSRC, {since: gulp.lastRun('vendor-js')}) // Only run on changed files.
-        .pipe(plumber(errorHandler))
-        .pipe(
-            babel({
-                presets: [
-                    [
-                        '@babel/preset-env', // Preset to compile your modern JS to ES5.
-                        {
-                            targets: {browsers: config.browserList} // Target browser list to support.
-                        }
-                    ]
+gulp.task('vendor-js', () => gulp
+    .src(config.jsVendorSRC, {since: gulp.lastRun('vendor-js')}) // Only run on changed files.
+    .pipe(plumber(errorHandler))
+    .pipe(
+        babel({
+            presets: [
+                [
+                    '@babel/preset-env', // Preset to compile your modern JS to ES5.
+                    {
+                        targets: {browsers: config.browserList} // Target browser list to support.
+                    }
                 ]
-            })
-        )
-        .pipe(remember(config.jsVendorSRC)) // Bring all files back to stream.
-        .pipe(concat(config.jsVendorFile))
-        .pipe(lineec()) // Consistent Line Endings for non UNIX systems.
-        .pipe(gulp.dest(config.jsDestination))
-        .pipe(
-            rename({
-                suffix: '.min'
-            })
-        )
-        .pipe(uglify())
-        .pipe(lineec()) // Consistent Line Endings for non UNIX systems.
-        .pipe(gulp.dest(config.jsDestination))
-        .pipe(notify({message: '\n\n✅  ===> VENDOR JS — completed!\n', onLast: true}));
-});
+            ]
+        })
+    )
+    .pipe(remember(config.jsVendorSRC)) // Bring all files back to stream.
+    .pipe(concat(config.jsVendorFile))
+    .pipe(lineec()) // Consistent Line Endings for non UNIX systems.
+    .pipe(gulp.dest(config.jsDestination))
+    .pipe(
+        rename({
+            suffix: '.min'
+        })
+    )
+    .pipe(uglify())
+    .pipe(lineec()) // Consistent Line Endings for non UNIX systems.
+    .pipe(gulp.dest(config.jsDestination))
+    .pipe(notify({message: '\n\n✅  ===> VENDOR JS — completed!\n', onLast: true}))
+);
 
 /**
  * Task: `custom-js`.
@@ -170,36 +168,35 @@ gulp.task('vendor-js', () => {
  *     3. Renames the JS file with suffix .min.js
  *     4. Uglifes/Minifies the JS file and generates custom.min.js
  */
-gulp.task('custom-js', () => {
-    return gulp
-        .src(config.jsCustomSRC, {since: gulp.lastRun('custom-js')}) // Only run on changed files.
-        .pipe(plumber(errorHandler))
-        .pipe(
-            babel({
-                presets: [
-                    [
-                        '@babel/preset-env', // Preset to compile your modern JS to ES5.
-                        {
-                            targets: {browsers: config.browserList} // Target browser list to support.
-                        }
-                    ]
+gulp.task('custom-js', () => gulp
+    .src(config.jsCustomSRC, {since: gulp.lastRun('custom-js')}) // Only run on changed files.
+    .pipe(plumber(errorHandler))
+    .pipe(
+        babel({
+            presets: [
+                [
+                    '@babel/preset-env', // Preset to compile your modern JS to ES5.
+                    {
+                        targets: {browsers: config.browserList} // Target browser list to support.
+                    }
                 ]
-            })
-        )
-        .pipe(remember(config.jsCustomSRC)) // Bring all files back to stream.
-        .pipe(concat(config.jsCustomFile))
-        .pipe(lineec()) // Consistent Line Endings for non UNIX systems.
-        .pipe(gulp.dest(config.jsDestination))
-        .pipe(
-            rename({
-                suffix: '.min'
-            })
-        )
-        .pipe(uglify())
-        .pipe(lineec()) // Consistent Line Endings for non UNIX systems.
-        .pipe(gulp.dest(config.jsDestination))
-        .pipe(notify({message: '\n\n✅  ===> CUSTOM JS — completed!\n', onLast: true}));
-});
+            ]
+        })
+    )
+    .pipe(remember(config.jsCustomSRC)) // Bring all files back to stream.
+    .pipe(concat(config.jsCustomFile))
+    .pipe(lineec()) // Consistent Line Endings for non UNIX systems.
+    .pipe(gulp.dest(config.jsDestination))
+    .pipe(
+        rename({
+            suffix: '.min'
+        })
+    )
+    .pipe(uglify())
+    .pipe(lineec()) // Consistent Line Endings for non UNIX systems.
+    .pipe(gulp.dest(config.jsDestination))
+    .pipe(notify({message: '\n\n✅  ===> CUSTOM JS — completed!\n', onLast: true}))
+);
 
 gulp.task('fonts', () => {
     return gulp
@@ -223,24 +220,23 @@ gulp.task('fonts', () => {
  * Read the following to change these options.
  * @link https://github.com/sindresorhus/gulp-imagemin
  */
-gulp.task('images', () => {
-    return gulp
-        .src(config.imagesSRC)
-        .pipe(
-            cache(
-                imagemin([
-                    imagemin.gifsicle({interlaced: true}),
-                    imagemin.jpegtran({progressive: true}),
-                    imagemin.optipng({optimizationLevel: 3}),
-                    imagemin.svgo({
-                        plugins: [{removeViewBox: true}, {cleanupIDs: false}]
-                    })
-                ])
-            )
+gulp.task('images', () => gulp
+    .src(config.imagesSRC)
+    .pipe(
+        cache(
+            imagemin([
+                imagemin.gifsicle({interlaced: true}),
+                imagemin.jpegtran({progressive: true}),
+                imagemin.optipng({optimizationLevel: 3}),
+                imagemin.svgo({
+                    plugins: [{removeViewBox: true}, {cleanupIDs: false}]
+                })
+            ])
         )
-        .pipe(gulp.dest(config.imagesDestination))
-        .pipe(notify({message: '\n\n✅  ===> IMAGES — completed!\n', onLast: true}));
-});
+    )
+    .pipe(gulp.dest(config.imagesDestination))
+    .pipe(notify({message: '\n\n✅  ===> IMAGES — completed!\n', onLast: true}))
+);
 
 /**
  * Watch Tasks.
@@ -264,10 +260,10 @@ gulp.task(
  *
  * Delete destination folder
  */
-gulp.task('clear', function () {
-    return gulp.src(config.themeDir + '/assets/', {read: false})
-        .pipe(clean({force: true}));
-});
+gulp.task('clear', () => gulp
+    .src(config.themeDir + '/assets/', {read: false})
+    .pipe(clean({force: true}))
+);
 
 /**
  * Task: `clearCache`.
@@ -275,6 +271,4 @@ gulp.task('clear', function () {
  * Deletes the images cache. By running the next "images" task,
  * each image will be regenerated.
  */
-gulp.task('clearCache', function (done) {
-    return cache.clearAll(done);
-});
+gulp.task('clearCache', done => cache.clearAll(done));
