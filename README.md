@@ -16,9 +16,11 @@
 - Sourcemaps
 
 ### JavaScript
-- Concatenation
+- Concatenation by group
 - Minification/uglification
-- Separate vendor and custom JS files handling
+- Separate files by groups
+  - all js files in the root of the js folder will be concatenate in main.js
+  - a new file can be created by creating a folder in the groups folder
 
 ### Images
 - Minification/optimization of images
