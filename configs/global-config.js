@@ -8,7 +8,7 @@ const styleWatchFiles = config.themeDir + 'src/scss/**/*.scss';
 
 // JS Vendor related.
 const jsSRC = config.themeDir + 'src/js/**/*.js';
-const jsDir = config.themeDir + 'src/js/lib/';
+const jsDir = config.themeDir + 'src/js/groups/';
 const jsDestination = config.themeDir + 'assets/js/';
 const jsWatch = config.themeDir + 'src/js/**/*.js';
 
