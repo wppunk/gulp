@@ -7,13 +7,10 @@ const styleDestination = config.themeDir + 'assets/css/';
 const styleWatchFiles = config.themeDir + 'src/scss/**/*.scss';
 
 // JS Vendor related.
-const jsCustomFile = 'custom.js';
-const jsVendorFile = 'vendor.js';
-const jsCustomSRC = config.themeDir + 'src/js/*.js';
-const jsVendorSRC = config.themeDir + 'src/js/lib/*.js';
+const jsSRC = config.themeDir + 'src/js/**/*.js';
+const jsDir = config.themeDir + 'src/js/lib/';
 const jsDestination = config.themeDir + 'assets/js/';
-const jsWatchCustomFiles = config.themeDir + 'src/js/*.js';
-const jsWatchVendorFiles = config.themeDir + 'src/js/lib/*.js';
+const jsWatch = config.themeDir + 'src/js/**/*.js';
 
 // Fonts related.
 const fontsSRC = config.themeDir + 'src/fonts/**/**';
@@ -50,13 +47,10 @@ module.exports = {
     styleSRC,
     styleDestination,
     styleWatchFiles,
-    jsVendorFile,
-    jsCustomFile,
-    jsVendorSRC,
-    jsCustomSRC,
+    jsSRC,
+    jsDir,
     jsDestination,
-    jsWatchCustomFiles,
-    jsWatchVendorFiles,
+    jsWatch,
     fontsSRC,
     fontsDestination,
     fontsWatchFiles,

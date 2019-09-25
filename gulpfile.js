@@ -34,8 +34,9 @@ const cache = require('gulp-cache');
 const plumber = require('gulp-plumber');
 const remember = require('gulp-remember');
 const clean = require('gulp-clean');
-const concat = require('gulp-concat');
+const groupConcat = require('gulp-group-concat');
 const beep = require('beepbeep');
+const {readdirSync} = require('fs');
 
 /**
  * Task: `browser-sync`.
@@ -55,6 +56,19 @@ const browsersync = done => {
     done();
 };
 
+/**
+ * Create group concat config where folder it's js file included all folder files
+ *
+ * @param array
+ */
+const jsConfig = readdirSync(config.jsDir, {withFileTypes: true})
+    .filter(dirent => dirent.isDirectory())
+    .map(dirent => dirent.name)
+    .reduce((acc, dirname) => {
+        acc[`${dirname}.js`] = '**/lib/' + dirname + '/*.js';
+        acc['main.js'] = ['**/*.js', '!**/lib/**'];
+        return acc;
+    }, {});
 // Helper function to allow browser reload with Gulp 4.
 const reload = done => {
     browserSync.reload();
@@ -127,8 +141,8 @@ gulp.task('styles', () => gulp
  *     3. Renames the JS file with suffix .min.js
  *     4. Uglifes/Minifies the JS file and generates custom.min.js
  */
-gulp.task('vendor-js', () => gulp
-    .src(config.jsVendorSRC, {since: gulp.lastRun('vendor-js')}) // Only run on changed files.
+gulp.task('js', () => gulp
+    .src(config.jsSRC, {since: gulp.lastRun('js')}) // Only run on changed files.
     .pipe(plumber(errorHandler))
     .pipe(
         babel({
@@ -142,8 +156,8 @@ gulp.task('vendor-js', () => gulp
             ]
         })
     )
-    .pipe(remember(config.jsVendorSRC)) // Bring all files back to stream.
-    .pipe(concat(config.jsVendorFile))
+    .pipe(remember(config.jsSRC)) // Bring all files back to stream.
+    .pipe(groupConcat(jsConfig))
     .pipe(lineec()) // Consistent Line Endings for non UNIX systems.
     .pipe(gulp.dest(config.jsDestination))
     .pipe(
@@ -154,48 +168,7 @@ gulp.task('vendor-js', () => gulp
     .pipe(uglify())
     .pipe(lineec()) // Consistent Line Endings for non UNIX systems.
     .pipe(gulp.dest(config.jsDestination))
-    .pipe(notify({message: '\n\n✅  ===> VENDOR JS — completed!\n', onLast: true}))
-);
-
-/**
- * Task: `custom-js`.
- *
- * Concatenate and uglify JS scripts.
- *
- * This task does the following:
- *     1. Gets the source folder for JS custom files
- *     2. Concatenates all the files and generates custom.js
- *     3. Renames the JS file with suffix .min.js
- *     4. Uglifes/Minifies the JS file and generates custom.min.js
- */
-gulp.task('custom-js', () => gulp
-    .src(config.jsCustomSRC, {since: gulp.lastRun('custom-js')}) // Only run on changed files.
-    .pipe(plumber(errorHandler))
-    .pipe(
-        babel({
-            presets: [
-                [
-                    '@babel/preset-env', // Preset to compile your modern JS to ES5.
-                    {
-                        targets: {browsers: config.browserList} // Target browser list to support.
-                    }
-                ]
-            ]
-        })
-    )
-    .pipe(remember(config.jsCustomSRC)) // Bring all files back to stream.
-    .pipe(concat(config.jsCustomFile))
-    .pipe(lineec()) // Consistent Line Endings for non UNIX systems.
-    .pipe(gulp.dest(config.jsDestination))
-    .pipe(
-        rename({
-            suffix: '.min'
-        })
-    )
-    .pipe(uglify())
-    .pipe(lineec()) // Consistent Line Endings for non UNIX systems.
-    .pipe(gulp.dest(config.jsDestination))
-    .pipe(notify({message: '\n\n✅  ===> CUSTOM JS — completed!\n', onLast: true}))
+    .pipe(notify({message: '\n\n✅  ===> JS — completed!\n', onLast: true}))
 );
 
 gulp.task('fonts', () => {
@@ -245,11 +218,10 @@ gulp.task('images', () => gulp
  */
 gulp.task(
     'default',
-    gulp.parallel('styles', 'vendor-js', 'custom-js', 'fonts', 'images', browsersync, () => {
+    gulp.parallel('styles', 'js', 'fonts', 'images', browsersync, () => {
         gulp.watch(config.phpWatchFiles, reload); // Reload on PHP file changes.
         gulp.watch(config.styleWatchFiles, gulp.parallel('styles')); // Reload on SCSS file changes.
-        gulp.watch(config.jsWatchVendorFiles, gulp.series('vendor-js', reload)); // Reload on vendorsJS file changes.
-        gulp.watch(config.jsWatchCustomFiles, gulp.series('custom-js', reload)); // Reload on customJS file changes.
+        gulp.watch(config.jsWatch, gulp.series('js', reload)); // Reload on js file changes.
         gulp.watch(config.fontsWatchFiles, gulp.series('fonts', reload)); // Reload on fonts file changes.
         gulp.watch(config.imagesWatchFiles, gulp.series('images', reload)); // Reload on images file changes.
     })
